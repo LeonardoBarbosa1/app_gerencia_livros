@@ -11,8 +11,5 @@
 #### Executar o comando para subir os containers:
 - docker-compose up -d
 
-#### Executar o comando para subir o npm
-- sail npm run dev
-
 #### Acesse o sistema:
 - http://localhost/livro

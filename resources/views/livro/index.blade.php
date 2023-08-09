@@ -20,31 +20,31 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card-body table-responsive">
 
                     @if (session('success'))
-                        <div id="mensagem-sucesso" class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
+                    <div id="mensagem-sucesso" class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
                     @endif
 
                     @if (session('error'))
-                        <div id="mensagem-error" class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
+                    <div id="mensagem-error" class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
                     @endif
                     {{-- deixando mensagens por 5 segundos --}}
                     @push('scripts')
-                        <script>
-                            setTimeout(function() {
-                                document.getElementById('mensagem-sucesso').style.opacity = '0';
-                            }, 5000);
-                            setTimeout(function() {
-                                document.getElementById('mensagem-error').style.opacity = '0';
-                            }, 5000);
+                    <script>
+                        setTimeout(function() {
+                            document.getElementById('mensagem-sucesso').style.opacity = '0';
+                        }, 5000);
+                        setTimeout(function() {
+                            document.getElementById('mensagem-error').style.opacity = '0';
+                        }, 5000);
 
-                        </script>
+                    </script>
                     @endpush
 
                     <table class="table">
@@ -53,7 +53,7 @@
                                 <th scope="col">Capa</th>
                                 <th scope="col">Informações do Livro</th>
                                 <th scope="col">Ações</th>
-                                
+
                             </tr>
                         </thead>
                         <tbody>
@@ -61,9 +61,13 @@
                             <tr>
                                 <!-- Exibindo as informações do livro -->
                                 <td scope="row">
-                                    <img src="{{ $livro->nome_imagem }}" alt="Capa do Livro">
+                                    @if ($livro->nome_imagem)
+                                        <img src="{{ $livro->nome_imagem }}" alt="Capa do Livro">
+                                    @else
+                                        <p class="mt-4 text-muted">Nenhuma <br> imagem <br>disponível</p>
+                                    @endif
                                 </td>
-                                <td scope="row" >
+                                <td scope="row">
                                     <div class="mt-md-4">
                                         <strong>Título:</strong> {{ $livro->titulo }}<br>
                                         <strong>Autor:</strong> {{ $livro->autor }}<br>
@@ -75,7 +79,7 @@
                                         <a class="btn bg-primary px-1 py-1 mb-2" href="{{ route('livro.edit', $livro->id)}}">
                                             <img style="width: 20px; height: 20px;" src="/img/lapis.png" alt="">
                                         </a>
-                                        
+
                                         <a class=" btn bg-info px-1 py-1 mb-2" href="{{ route('livro.show', $livro->id)}}">
                                             <img style="width: 20px; height: 20px;" src="/img/view.png" alt="">
                                         </a>
@@ -85,43 +89,67 @@
                                                 <img style="width: 20px; height: 20px;" src="/img/lixeira.png" alt="">
                                             </a>
                                         </div>
-                                        
+
                                         @foreach($livros as $livro)
 
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="myModal{{ $livro->id }}" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-body">
-                                                    <div class="card-body">
-                                                        <form id="form_{{ $livro->id }}" method="post" action="{{ route('livro.destroy', ['livro' => $livro->id]) }}">
-                                                            @method('DELETE')
-                                                            @csrf
-                                                            <div class="mb-3">
-                                                                <h5 class="h5">Tem certeza que deseja excluir o livro "{{ $livro->titulo }}"?</h5>
-                                                                <p class="text-muted">Essa ação é irreversível.</p>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <a class="btn btn-danger" href="#" onclick="document.getElementById('form_{{ $livro->id }}').submit()"> 
-                                                                    Sim, Excluir
-                                                                </a>
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            </div>
-                                                        </form>
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="myModal{{ $livro->id }}" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-body">
+                                                        <div class="card-body">
+                                                            <form id="form_{{ $livro->id }}" method="post" action="{{ route('livro.destroy', ['livro' => $livro->id]) }}">
+                                                                @method('DELETE')
+                                                                @csrf
+                                                                <div class="mb-3">
+                                                                    <h5 class="h5">Tem certeza que deseja excluir o livro "{{ $livro->titulo }}"?</h5>
+                                                                    <p class="text-muted">Essa ação é irreversível.</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <a class="btn btn-danger" href="#" onclick="document.getElementById('form_{{ $livro->id }}').submit()">
+                                                                        Sim, Excluir
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    @endforeach
+                                        @endforeach
 
                                 </td>
                             </tr>
-                            @endforeach 
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    <li class="page-item">
+                        <a class="page-link" href="{{ $livros->previousPageUrl()}}" aria-label="Previous">
+                            <span aria-hidden="true">Voltar</span>
+                        </a>
+                    </li>
+
+                    @for ($i = 1; $i <= $livros->lastPage(); $i++)
+                        <li class="page-item {{ $livros->currentPage() == $i ? 'active' : ''}} ">
+                            <a class="page-link" href="{{ $livros->url($i) }}">{{ $i }}</a>
+                        </li>
+                        @endfor
+
+
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $livros->nextPageUrl()}}" aria-label="Next">
+                                <span aria-hidden="true">Avançar</span>
+                            </a>
+                        </li>
+                </ul>
+
+            </nav>
+
         </div>
     </div>
 </div>

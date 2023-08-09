@@ -16,8 +16,8 @@ class LivroController extends Controller
      */
     public function index()
     {
-        
-        $livros = Livro::all();
+
+        $livros = Livro::orderBy('created_at', 'desc')->paginate(20);
         return view('livro.index', ['livros' => $livros]);
     }
 
@@ -43,7 +43,7 @@ class LivroController extends Controller
             if (isset($livroInfo['nome_imagem'])) {
                 $imagem = file_get_contents($livroInfo['nome_imagem']);
                 file_put_contents(storage_path('app/imagem.jpg'), $imagem);
-        
+
                 // Salvar informações do livro no banco de dados
                 Livro::create([
                     'titulo' => $request->titulo,
@@ -60,7 +60,7 @@ class LivroController extends Controller
                     'nome_imagem' => $livroInfo['nome_imagem'] ?? null,
                     'isbn' => $livroInfo['isbn'] ?? null,
                 ]);
-        
+
                 // Salvar imagem no bucket do S3
                 $tituloSlug = Str::slug($request->titulo, '-');
                 Storage::disk('s3')->put($tituloSlug . '.png', $imagem);
@@ -81,12 +81,12 @@ class LivroController extends Controller
                     'isbn' => $livroInfo['isbn'] ?? null,
                 ]);
             }
-        
+
             return redirect()->route('livro.index')->with('success', 'Livro cadastrado com sucesso.');
         } catch (\Exception $e) {
             return redirect()->route('livro.index')->with('error', 'Erro ao cadastrar, Livro já cadastrado.');
         }
-    }    
+    }
 
     private function getLivroInfoFromGoogleBooks($apiKey, $titulo)
     {
@@ -108,13 +108,13 @@ class LivroController extends Controller
         }
 
         return $livroInfo;
-    } 
+    }
     /**
      * Display the specified resource.
      */
     public function show(Livro $livro)
     {
-        return view('livro.show', ['livro' => $livro ]);
+        return view('livro.show', ['livro' => $livro]);
     }
 
     /**
@@ -122,82 +122,82 @@ class LivroController extends Controller
      */
     public function edit(Livro $livro)
     {
-        return view('livro.edit', ['livro' => $livro ]);
+        return view('livro.edit', ['livro' => $livro]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    
+
 
     public function update(UpdateLivroRequest $request, Livro $livro)
-{
-    $apiKey = 'AIzaSyDRnWFu1lmo6HVYTAKI2fuyss7K3VBIi6A';
-    $titulo = $request->titulo; // Título fornecido pelo usuário
+    {
+        $apiKey = 'AIzaSyDRnWFu1lmo6HVYTAKI2fuyss7K3VBIi6A';
+        $titulo = $request->titulo; // Título fornecido pelo usuário
 
-    $livroInfo = $this->getLivroInfoFromGoogleBooks($apiKey, $titulo);
-    //nome_imagem antiga
-    $imagemAntiga = Str::slug($livro->titulo) . '.png';
-    
-    
-    try {
-        if (isset($livroInfo['nome_imagem'])) {
-            $imagem = file_get_contents($livroInfo['nome_imagem']);
-            file_put_contents(storage_path('app/imagem.jpg'), $imagem);
+        $livroInfo = $this->getLivroInfoFromGoogleBooks($apiKey, $titulo);
+        //nome_imagem antiga
+        $imagemAntiga = Str::slug($livro->titulo) . '.png';
 
-            $novoNomeImagem = Str::slug($request->titulo) . '.png';
-            // Atualizar informações do livro no banco de dados
-            $livro->update([
-                'titulo' => $request->titulo,
-                'autor' => $request->autor,
-                'ano_publicacao' => $request->ano_publicacao,
-                'cep' => $request->cep,
-                'cidade' => $request->cidade,
-                'estado' => $request->estado,
-                'bairro' => $request->bairro,
-                'rua' => $request->rua,
-                'numero' => $request->numero,
-                'complemento' => $request->complemento,
-                'descricao' => $request->descricao,
-                'nome_imagem' => $livroInfo['nome_imagem'] ?? null,
-                'isbn' => $livroInfo['isbn'] ?? null,
-            ]);
-            
 
-            
-            // Salvar imagem atualizada no bucket do S3
-            $novaImagem = file_get_contents(storage_path('app/imagem.jpg'));
-            Storage::disk('s3')->put($novoNomeImagem, $novaImagem);
+        try {
+            if (isset($livroInfo['nome_imagem'])) {
+                $imagem = file_get_contents($livroInfo['nome_imagem']);
+                file_put_contents(storage_path('app/imagem.jpg'), $imagem);
 
-            // Excluir imagem antiga, se necessário
-            if (!empty($imagemAntiga)) {
-                Storage::disk('s3')->delete($imagemAntiga);
+                $novoNomeImagem = Str::slug($request->titulo) . '.png';
+                // Atualizar informações do livro no banco de dados
+                $livro->update([
+                    'titulo' => $request->titulo,
+                    'autor' => $request->autor,
+                    'ano_publicacao' => $request->ano_publicacao,
+                    'cep' => $request->cep,
+                    'cidade' => $request->cidade,
+                    'estado' => $request->estado,
+                    'bairro' => $request->bairro,
+                    'rua' => $request->rua,
+                    'numero' => $request->numero,
+                    'complemento' => $request->complemento,
+                    'descricao' => $request->descricao,
+                    'nome_imagem' => $livroInfo['nome_imagem'] ?? null,
+                    'isbn' => $livroInfo['isbn'] ?? null,
+                ]);
+
+
+
+                // Salvar imagem atualizada no bucket do S3
+                $novaImagem = file_get_contents(storage_path('app/imagem.jpg'));
+                Storage::disk('s3')->put($novoNomeImagem, $novaImagem);
+
+                // Excluir imagem antiga, se necessário
+                if (!empty($imagemAntiga)) {
+                    Storage::disk('s3')->delete($imagemAntiga);
+                }
+
+            } else {
+                // Atualizar informações do livro no banco de dados sem a imagem
+                $livro->update([
+                    'titulo' => $request->titulo,
+                    'autor' => $request->autor,
+                    'ano_publicacao' => $request->ano_publicacao,
+                    'cep' => $request->cep,
+                    'cidade' => $request->cidade,
+                    'estado' => $request->estado,
+                    'bairro' => $request->bairro,
+                    'rua' => $request->rua,
+                    'numero' => $request->numero,
+                    'complemento' => $request->complemento,
+                    'descricao' => $request->descricao,
+                    'isbn' => $livroInfo['isbn'] ?? null,
+                ]);
             }
-            
-        } else {
-            // Atualizar informações do livro no banco de dados sem a imagem
-            $livro->update([
-                'titulo' => $request->titulo,
-                'autor' => $request->autor,
-                'ano_publicacao' => $request->ano_publicacao,
-                'cep' => $request->cep,
-                'cidade' => $request->cidade,
-                'estado' => $request->estado,
-                'bairro' => $request->bairro,
-                'rua' => $request->rua,
-                'numero' => $request->numero,
-                'complemento' => $request->complemento,
-                'descricao' => $request->descricao,
-                'isbn' => $livroInfo['isbn'] ?? null,
-            ]);
+
+            return redirect()->route('livro.index')->with('success', 'Livro atualizado com sucesso.');
+        } catch (\Exception $e) {
+            return redirect()->route('livro.index')->with('error', 'Erro ao atualizar, Livro já cadastrado.');
         }
 
-        return redirect()->route('livro.index')->with('success', 'Livro atualizado com sucesso.');
-    } catch (\Exception $e) {
-        return redirect()->route('livro.index')->with('error', 'Erro ao atualizar, Livro já cadastrado.');
     }
-
-}
 
     /**
      * Remove the specified resource from storage.
@@ -206,7 +206,7 @@ class LivroController extends Controller
     {
         $imagemAntiga = Str::slug($livro->titulo) . '.png';
 
-        
+
         $livro->delete();
 
         //verifique se a exclusão do livro foi bem-sucedida antes de excluir a imagem

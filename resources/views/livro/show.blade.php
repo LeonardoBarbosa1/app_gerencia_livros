@@ -11,7 +11,11 @@
                     <fieldset disabled>
                             <div class="">
                                 <div class="text-center">
-                                    <img src="{{ $livro->nome_imagem }}" alt="Capa do Livro" class="img-fluid mx-auto">
+                                    @if ($livro->nome_imagem)
+                                    <img src="{{ $livro->nome_imagem }}" alt="Capa do Livro">
+                                @else
+                                    <p class="mt-4 text-muted">Nenhuma <br> imagem <br>disponível</p>
+                                @endif
                                 </div>
                             </div>
                 

@@ -1,2 +1,2 @@
-## Sistema feito em Laravel 10, bootstrap e MySql
+## Sistema feito em Laravel Sail v10, bootstrap e MySql.
 
